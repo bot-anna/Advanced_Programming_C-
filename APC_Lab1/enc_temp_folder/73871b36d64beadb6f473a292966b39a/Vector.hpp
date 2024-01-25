@@ -149,7 +149,7 @@ public:
 	{
 		_size = strlen(other);
 		_cap = _size;
-		_ptr = new T[_cap];
+		_ptr = new char[_cap];
 		size_t i;
 		for (i = 0; i < _cap; i++)
 		{

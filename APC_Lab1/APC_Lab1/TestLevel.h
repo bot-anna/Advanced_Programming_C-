@@ -1,6 +1,6 @@
 #pragma once
 
-#define LEVEL 3
+#define LEVEL 7
 #define G_BETYG
 //#define VG_BETYG
 #define DEL 1
