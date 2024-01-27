@@ -128,6 +128,7 @@ void TestIterPartR_() {
     assert(it[-2] == 'r');
     //assert(*(it -= 1) == 'a' && *it == 'a');
 
+    
     assert(((it + 3) - it) == +3);
     assert(((it - 3) - it) == -3);
 }

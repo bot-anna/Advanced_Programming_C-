@@ -42,8 +42,8 @@ namespace {
             value = other.value;
             return *this;
         }
-        friend
-            auto operator<=>(const Dhelper&, const Dhelper&) = default;
+
+        friend auto operator<=>(const Dhelper&, const Dhelper&) = default;
 
         explicit operator char() const { return value; }
         friend

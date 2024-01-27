@@ -47,7 +47,7 @@ private:
 		}
 		CT& operator[](size_t i) const
 		{
-			return _ptr[i];
+			return _ptr[(i * DIR)];
 		}
 		VectorIterDir& operator++()
 		{
@@ -79,7 +79,7 @@ private:
 
 		VectorIterDir operator+(difference_type i) const
 		{
-			return VectorIterDir(*this) += (i * DIR);
+			return VectorIterDir(*this) += i;
 		}
 
 		VectorIterDir operator-(difference_type i) const
@@ -89,7 +89,7 @@ private:
 
 		difference_type operator-(const VectorIterDir& other) const
 		{
-			return _ptr - (other._ptr * DIR);
+			return (_ptr - other._ptr) * DIR;
 		}
 
 		friend bool operator==(const VectorIterDir& lhs, const VectorIterDir& rhs)
@@ -104,22 +104,22 @@ private:
 
 		friend bool operator<(const VectorIterDir& lhs, const VectorIterDir& rhs)
 		{
-			return lhs._ptr < rhs._ptr;
+			return (DIR > 0 ? lhs._ptr < rhs._ptr : lhs._ptr > rhs._ptr);
 		}
 
 		friend bool operator>(const VectorIterDir& lhs, const VectorIterDir& rhs)
 		{
-			return lhs._ptr > rhs._ptr;
+			return (DIR > 0 ? lhs._ptr > rhs._ptr : lhs._ptr < rhs._ptr);
 		}
 
 		friend bool operator<=(const VectorIterDir& lhs, const VectorIterDir& rhs)
 		{
-			return lhs._ptr <= rhs._ptr;
+			return (DIR > 0 ? lhs._ptr <= rhs._ptr : lhs._ptr >= rhs._ptr);
 		}
 
 		friend bool operator>=(const VectorIterDir& lhs, const VectorIterDir& rhs)
 		{
-			return lhs._ptr >= rhs._ptr;
+			return (DIR > 0 ? lhs._ptr >= rhs._ptr : lhs._ptr <= rhs._ptr);
 		}
 	};
 	
@@ -130,7 +130,7 @@ public:
 	using iterator = VectorIterDir<T, +1>;
 	using const_iterator = VectorIterDir<const T, +1>;
 	using reverse_iterator = VectorIterDir < T, -1>;
-	using reverse_const_iterator = VectorIterDir<const T, -1>;
+	using const_reverse_iterator = VectorIterDir<const T, -1>;
 
 	~Vector() noexcept
 	{
@@ -149,11 +149,18 @@ public:
 	{
 		_size = strlen(other);
 		_cap = _size;
-		_ptr = new T[_cap];
-		size_t i;
-		for (i = 0; i < _cap; i++)
+		if (_size != 0)
 		{
-			_ptr[i] = other[i];
+			_ptr = new T[_cap];
+			size_t i;
+			for (i = 0; i < _size; i++)
+			{
+				_ptr[i] = other[i];
+			}
+		} 
+		else
+		{
+			_ptr = nullptr;
 		}
 		CHECK
 	}
@@ -161,11 +168,18 @@ public:
 	{
 		_size = other._size;
 		_cap = other._cap;
-		_ptr = new T[_cap];
-
-		for (size_t i = 0; i < _size; i++)
+		if (_size == 0)
 		{
-			_ptr[i] = other._ptr[i];
+			_ptr = nullptr;
+		}
+		else
+		{
+			_ptr = new T[_cap];
+
+			for (size_t i = 0; i < _size; i++)
+			{
+				_ptr[i] = other._ptr[i];
+			}
 		}
 		CHECK
 	}
@@ -185,18 +199,22 @@ public:
 	{
 		_size = other._size;
 		_cap = other._cap;
-		_ptr = new T[other._cap];
+		T* temp = new T[other._cap];
 
 		for (size_t i = 0; i < _size; i++)
 		{
-			_ptr[i] = other._ptr[i];
+			temp[i] = other._ptr[i];
 		}
+
+		delete[] _ptr;
+		_ptr = temp;
 		CHECK
 		return *this;
 	}
 
 	Vector& operator=(Vector&& other)
 	{
+		delete[] _ptr;
 		_size = other._size;
 		_cap = other._cap;
 		_ptr = other._ptr;
@@ -258,7 +276,7 @@ public:
 	}
 	void reserve(size_t n)
 	{
-		if (n < _size)
+		if (n < _size || n <= _cap)
 		{
 			return;
 		}
@@ -315,7 +333,7 @@ public:
 		{
 			reserve(1);
 		}
-		if (_size >= _cap)
+		if (_size == _cap)
 		{
 			reserve(_size * 2);
 		}
@@ -331,8 +349,7 @@ public:
 			return;
 		}
 
-		//T[_size] = T();
-		_size--;
+		_ptr[--_size] = T();
 		CHECK
 	}
 
@@ -362,14 +379,18 @@ public:
 		auto l_iter = lhs.begin();
 		auto r_iter = rhs.begin();
 
-		while (l_iter != lhs.end())
+		while (l_iter != lhs.end() && r_iter != rhs.end())
 		{
-			if (*(l_iter++) > *(r_iter++))
+			if (*(l_iter) != *(r_iter))
 			{
-				return false;
+				return *l_iter < *r_iter;
 			}
+
+			l_iter++;
+			r_iter++;
 		}
-		return true;
+
+		return (l_iter == lhs.end()) && (r_iter != rhs.end());
 	}
 	friend bool operator>(const Vector& lhs, const Vector& rhs)
 	{
@@ -419,23 +440,23 @@ public:
 	}
 	reverse_iterator rend() noexcept
 	{
-		return reverse_iterator(_ptr);
+		return reverse_iterator(_ptr - 1);
 	}
-	reverse_const_iterator rbegin() const noexcept
+	const_reverse_iterator rbegin() const noexcept
 	{
-		return reverse_const_iterator(_ptr + _size - 1);
+		return const_reverse_iterator(_ptr + _size - 1);
 	}
-	reverse_const_iterator rend() const noexcept
+	const_reverse_iterator rend() const noexcept
 	{
-		return reverse_const_iterator(_ptr);
+		return const_reverse_iterator(_ptr - 1);
 	}
-	reverse_const_iterator crbegin() const noexcept
+	const_reverse_iterator crbegin() const noexcept
 	{
-		return reverse_const_iterator(_ptr + _size - 1);
+		return const_reverse_iterator(_ptr + _size - 1);
 	}
-	reverse_const_iterator crend() const noexcept
+	const_reverse_iterator crend() const noexcept
 	{
-		return reverse_const_iterator(_ptr);
+		return const_reverse_iterator(_ptr - 1);
 	}
 
 	
@@ -448,6 +469,18 @@ public:
 
 	bool Invariant() const
 	{
+		if (_size > _cap)
+		{
+			return false;
+		}
+		if (_ptr == nullptr && _cap > 0)
+		{
+			return false;
+		}
+		if (_ptr != nullptr && _cap == 0)
+		{
+			return false;
+		}
 		return true;
 	}
 };

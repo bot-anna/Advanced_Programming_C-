@@ -55,7 +55,7 @@ void TestBasic() {
 		assert(bar <= fox && !(bar >= fox));
 		assert(bar <= bar && fox >= fox);
 		Vector<char> foxa("foxa");
-		assert(fox != foxa && foxa != fox);
+		assert(fox != foxa && foxa != fox);	
 		assert(fox<foxa&& foxa>fox);
 		std::cout << "Level 3 OK\n";
 	}
@@ -63,7 +63,7 @@ void TestBasic() {
 #if LEVEL>=4
 	{
 		Vector<char> fox("fox"), bar("bar");
-		Vector<char> fox2(fox);
+ 		Vector<char> fox2(fox);
 		assert(fox2.Invariant() && fox2.size() == 3);
 		assert(fox == fox2);
 		fox2 = bar;
