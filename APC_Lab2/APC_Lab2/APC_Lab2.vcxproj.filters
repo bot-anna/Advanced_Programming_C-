@@ -30,6 +30,12 @@
     <ClInclude Include="Base.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RemAllConst.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sum.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TestMain.cpp">

@@ -132,7 +132,9 @@
     <ClInclude Include="Add.hpp" />
     <ClInclude Include="Base.hpp" />
     <ClInclude Include="ConstItProblem.hpp" />
+    <ClInclude Include="RemAllConst.hpp" />
     <ClInclude Include="Simplify.hpp" />
+    <ClInclude Include="Sum.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TestMain.cpp" />

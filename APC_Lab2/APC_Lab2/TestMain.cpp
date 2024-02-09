@@ -1,5 +1,5 @@
 #include <cassert>
-#define LEVEL 5
+#define LEVEL 7
 #define VG true
 
 #if LEVEL>=1
@@ -45,7 +45,7 @@ void TestSimplify() {
 #endif
 
 #if LEVEL>=4
-//#include "Simplify.hpp"
+#include "Simplify.hpp"
 
 void TestBase() {
     AssertSame(int, int);
@@ -81,6 +81,7 @@ void TestRemoveAllConst() {
 
 #if LEVEL>=7
 #include "Sum.hpp"
+#include <vector>
 void TestSum() {
     std::vector<int> v = { 1,2,3,-9 };
     int sum = Sum(v);
@@ -137,15 +138,20 @@ int main() {
     TestBase();
 #endif
 #if LEVEL>=5 && VG
-  //  TestRemoveAllConst();
+    TestBase();
 #endif
 #if LEVEL>=6
-    TestSum();
+    TestRemoveAllConst();
 #endif
 #if LEVEL>=7
-    TestSFINAE();
+    TestSum();
+    
 #endif
-#if LEVEL>=8 && VG
+#if LEVEL>=8
+    TestSFINAE();
+    
+#endif
+#if LEVEL >= 9 && VG
     TestIter();
 #endif
 }
