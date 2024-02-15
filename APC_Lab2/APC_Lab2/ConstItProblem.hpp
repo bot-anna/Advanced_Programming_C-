@@ -25,7 +25,9 @@ public:
 	Iter(T* p) :_ptr(p) {}
 	Iter() :_ptr(nullptr) {}
 	Iter(const Iter& other) : _ptr(other._ptr) {}
-	Iter(const Iter<T, T>& other) : _ptr(other._ptr) {}
+
+	template <class U, typename = std::enable_if_t<std::is_const<CT>::value, bool>>
+	Iter(const Iter<U, T>& other) : _ptr(other._ptr) {}
 };
 
 void Test() {
