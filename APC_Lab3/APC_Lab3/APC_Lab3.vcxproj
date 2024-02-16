@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{4651f0ee-560f-4d9b-8956-348d3f3d1732}</ProjectGuid>
-    <RootNamespace>APCLab2</RootNamespace>
+    <ProjectGuid>{ac19c883-28fc-4cfa-b674-7b92af1a5095}</ProjectGuid>
+    <RootNamespace>APCLab3</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -128,16 +128,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Ackermann.hpp" />
-    <ClInclude Include="Add.hpp" />
-    <ClInclude Include="ConstItProblem.hpp" />
-    <ClInclude Include="RemAllConst.hpp" />
-    <ClInclude Include="SFINAE.hpp" />
-    <ClInclude Include="Simplify.hpp" />
-    <ClInclude Include="Sum.hpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="TestBasic.cpp" />
+    <ClCompile Include="TestSharedG.cpp" />
+    <ClCompile Include="TestShWeakVG.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TestMain.cpp" />
+    <ClInclude Include="SharedPtr.hpp" />
+    <ClInclude Include="TestLevel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

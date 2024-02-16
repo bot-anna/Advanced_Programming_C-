@@ -47,11 +47,7 @@ struct SimplifyType<const T*>
 	using type = const T;
 };
 
-template<class T>
-struct SimplifyType<const T**>
-{
-	using type = const typename SimplifyType<T>::type;
-}; 
+
 
 template<class T>
 struct SimplifyType<const T&>
@@ -59,11 +55,6 @@ struct SimplifyType<const T&>
 	using type = const T;
 };
 
-template<class T>
-struct SimplifyType<T** const**>
-{
-	using type = T** const*;
-};
 
 
 template <class T>
@@ -117,11 +108,6 @@ struct BaseType<const T*>
 	using type = typename BaseType<T>::type;
 };
 
-template<class T>
-struct BaseType<const T**>
-{
-	using type = typename BaseType<T>::type;
-};
 
 template<class T>
 struct BaseType<const T&>
@@ -129,10 +115,5 @@ struct BaseType<const T&>
 	using type = typename BaseType<T>::type;
 };
 
-template<class T>
-struct BaseType<T** const**>
-{
-	using type = typename BaseType<T>::type;
-};
 
 #endif // !SIMPLIFY_HPP
