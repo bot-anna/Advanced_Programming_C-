@@ -12,8 +12,8 @@
 #endif
 #endif  // _DEBUG
 
-#define LEVEL 2
-//#define G_BETYG
+#define LEVEL 7
+#define G_BETYG
 //#define VG_BETYG
 
 //Börja med att ha G_BETYG och VG_BETYG undefined och sätt LEVEL till 1.

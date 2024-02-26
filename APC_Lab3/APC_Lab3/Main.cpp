@@ -23,7 +23,7 @@ int main() {
     TestVGWeak();
     cout << "Test for VG finished\n";
 #endif //  VG_BETYG
-   // new int; cout << "you should get a memory leak (new int)\n";
-    //    std::cin.get();
+    new int; cout << "you should get a memory leak (new int)\n";
+        std::cin.get();
 }
 

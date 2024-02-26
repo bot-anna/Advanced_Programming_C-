@@ -20,4 +20,4 @@ template <int Y>
 struct Add<0, Y>
 {
 	static const int value = Y;
-};
+}; 

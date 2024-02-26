@@ -1,5 +1,6 @@
 #include "TestLevel.h"
 #include "SharedPtr.hpp"
+#include "WeakPtr.hpp"
 #include <iostream>
 using std::cout;
 using std::endl;
