@@ -14,6 +14,8 @@ std::condition_variable cv;
 std::queue<int> queue;
 std::mutex cout_mtx;
 
+bool finished = false;
+
 void increment_elements(std::vector<int>& v, int index, int nbr_threads)
 {
 	size_t range = v.size() / nbr_threads;
@@ -273,7 +275,10 @@ void barista(int num)
 		int order;
 		{
 			std::unique_lock<std::mutex> lock{ mtx };
-			cv.wait(lock, [&]() {return !queue.empty(); });
+			cv.wait(lock, [&]() {return (!queue.empty() || finished); });
+
+			if (finished) return;
+
 			{
 				std::lock_guard<std::mutex> lock(cout_mtx);
 				std::cout << queue.size() << " orders in queue." << std::endl;
@@ -326,6 +331,10 @@ void exercise_four()
 		customers[i].join();
 	}
 
+	std::cin.get();
+	finished = true;
+	cv.notify_all();
+
 	for (int i = 0; i < nbr_baristas; i++)
 	{ 
 		baristas[i].join();
@@ -341,9 +350,5 @@ int main()
 	//exercise_three("bible.txt", "apple");
 	//exercise_three_p_two("bible.txt", "apple");
 	exercise_four(); 
-	/*
-	since the assignment states that baristas should wait for new orders after finish one,
-	the barista threads will keep on running forever, even after customers are finished. 
-	*/
 
 }
