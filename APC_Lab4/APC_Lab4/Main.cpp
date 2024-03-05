@@ -3,10 +3,16 @@
 #include <thread>
 #include <mutex>
 #include <fstream>
+#include <queue>
+
 
 std::mutex mtx;
 std::vector<std::string> lines;
 int _count;
+
+std::condition_variable cv;
+std::queue<int> queue;
+std::mutex cout_mtx;
 
 void increment_elements(std::vector<int>& v, int index, int nbr_threads)
 {
@@ -146,8 +152,6 @@ void search_text(const std::string searchFor, int nbr_threads, int index)
 	std::cout << "Thread ID: " << std::this_thread::get_id << " found " << count << " occurences in " << execution_time_ms << " ms" << std::endl;;
 }
 
-
-
 void exercise_three(const char* filename, const std::string searchFor)
 {
 	
@@ -247,12 +251,99 @@ void exercise_three_p_two(const char* filename, const std::string searchFor)
 	std::cout << "Total execution time: " << execution_time_ms << " ms" << std::endl;
 }
 
+void customer(int num, const int max_orders) 
+{
+	
+	{
+		std::unique_lock<std::mutex> lock{ mtx };
+		cv.wait(lock, [&]() {return queue.size() <= max_orders; });
+		queue.push(num);
+	}
+	{
+		std::lock_guard<std::mutex> lock(cout_mtx);
+		std::cout << "Customer " << num << " placed order: " << num << std::endl;
+	}
+	cv.notify_one();
+
+}
+
+void barista(int num) 
+{
+	while(1) {
+		int order;
+		{
+			std::unique_lock<std::mutex> lock{ mtx };
+			cv.wait(lock, [&]() {return !queue.empty(); });
+			{
+				std::lock_guard<std::mutex> lock(cout_mtx);
+				std::cout << queue.size() << " orders in queue." << std::endl;
+			}
+			order = queue.front();
+			queue.pop();
+		}
+		{
+			std::lock_guard<std::mutex> lock(cout_mtx);
+			std::cout << "Barista " << num << " picked up order: " << order << std::endl;
+		}
+		cv.notify_one();
+
+		for (int i = 0; i <= 5; i++)
+		{
+			int progress = (100 / 5) * i;
+			std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 1000));
+			{
+				std::lock_guard<std::mutex> lock(cout_mtx);
+				std::cout << "Barista " << num << " - Order " << order << " progress: " << progress << "%" << std::endl;
+			}
+		}
+		{
+			std::lock_guard<std::mutex> lock(cout_mtx);
+			std::cout << "Barista " << num << " completed order: " << order << "!" << std::endl;
+		}
+	}
+}
+
+void exercise_four()
+{
+	const int nbr_customers = 5;
+	const int nbr_baristas = 2;
+	const int max_orders = 3;
+
+	std::thread customers[nbr_customers];
+	std::thread baristas[nbr_baristas];
+
+	for (int i = 0; i < nbr_customers; i++)
+	{
+		customers[i] = std::thread(customer, i + 1, max_orders);
+	}
+	for (int i = 0; i < nbr_baristas; i++)
+	{
+		baristas[i] = std::thread(barista, i + 1);
+	}
+	
+	for (int i = 0; i < nbr_customers; i++)
+	{
+		customers[i].join();
+	}
+
+	for (int i = 0; i < nbr_baristas; i++)
+	{ 
+		baristas[i].join();
+	}
+
+}
+
 int main()
 {
 	//exercise_one();
 	//exercise_two();
 	//exercise_two_p_two();
 	//exercise_three("bible.txt", "apple");
-	exercise_three_p_two("bible.txt", "apple");
+	//exercise_three_p_two("bible.txt", "apple");
+	exercise_four(); 
+	/*
+	since the assignment states that baristas should wait for new orders after finish one,
+	the barista threads will keep on running forever, even after customers are finished. 
+	*/
 
 }
