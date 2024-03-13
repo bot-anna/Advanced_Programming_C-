@@ -1,7 +1,7 @@
 #ifndef POOLALLOCATOR_H
 #define POOLALLOCATOR_H
 
-template <size_t ES, typename T> class PoolAllocator
+template <size_t elementSize, typename T> class PoolAllocator
 {
 private:
 
@@ -9,7 +9,7 @@ private:
 		Node* next;
 	};
 
-	void* _data;
+	void* _pool = nullptr;
 	const size_t _size;
 	Node* _headNode;
 
@@ -17,62 +17,81 @@ private:
 public:
 	PoolAllocator(size_t size) : _size(size)
 	{
-		if (!(_pool = static_cast<T*>(std::malloc(_size * ES)))
+		if (_pool = static_cast<T*>(std::malloc(_size * elementSize)))
+		{
+			_headNode = reinterpret_cast<Node*>(_pool);
+
+			Node* node = _headNode;
+
+			for (int i = 0; i < _size - 1; i++)
+			{
+				node->next = reinterpret_cast<Node*>(reinterpret_cast<char*>(node) + elementSize);
+				node = node->next;
+			}
+
+			node->next = nullptr;
+		}
+		else
 		{
 			throw std::bad_alloc();
 		}
 
-		size_t chunkCount = (_size / ES);
-			for (auto index = 0; index < chunkCount; index++)
-			{
-				void* ptr = &_data[index * ES];
-				Node* node = reinterpret_cast<Node*>(ptr);
-
-				node->next = _headNode;
-				_headNode = node;
-			}
-
-
 	}
 
 	template <typename T, typename... Args>
-	void create(Args&&... args)
+	T* create(Args&&... args)
 	{
-		static_assert(sizeof(T) <= elementSize, "Object too large for pool element");
+		
 
-		// Find a free element
-		for (size_t i = 0; i < numElements; ++i) {
-			if (freeList[i]) {
-				freeList[i] = false; // Mark as used
-
-				// Calculate the address for the new object
-				void* addr = &data[i * elementSize];
-
-				// Construct the object in the allocated space and return a pointer to it
-				return new(addr) T(std::forward<Args>(args)...);
-			}
-		}
-
-		Node* node = _headNode;
-		if (node == nullptr)
+		if (sizeof(T) > elementSize)
 		{
-			return nullptr;
+			throw std::bad_alloc();
 		}
+		if (!_headNode)
+		{
+			throw std::bad_alloc();
+		}
+
+
+		void* address = reinterpret_cast<void*>(_headNode);
 
 		_headNode = _headNode->next;
-		return reinterpret_cast<void*>(node);
+		return new(address) T(std::forward<Args>(args)...);
 	}
 
+	template <typename T>
 	void destroy(T* ptr)
 	{
-		Node* node = reinterpret_cast<Node*>(ptr);
-		node-> = _headNode;
-		_headNode = node;
+		char* start = static_cast<char*>(_pool);
+		char* end = start + (_size * elementSize);
+		char* p = reinterpret_cast<char*>(ptr);
+
+		if(p >= start && p < end)
+		{
+			Node* node = reinterpret_cast<Node*>(ptr);
+			ptr->~T();
+			node->next = _headNode;
+			_headNode = node;
+		}
 	}
 
-	int count_free() {}
+	int count_free() 
+	{
+		int count = 0;
+		Node* node = _headNode;
 
-	std::string dump_pool() {}
+		while (node)
+		{
+			count++;
+			node = node->next;
+		}
+		return count;
+	}
+
+	std::string dump_pool() 
+	{
+		return "";
+	}
 };
 
 #endif
