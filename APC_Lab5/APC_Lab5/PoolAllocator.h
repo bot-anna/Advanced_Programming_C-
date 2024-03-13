@@ -1,7 +1,7 @@
 #ifndef POOLALLOCATOR_H
 #define POOLALLOCATOR_H
 
-template <size_t elementSize, typename T> class PoolAllocator
+template <size_t elementSize, typename IndexType> class PoolAllocator
 {
 private:
 
@@ -17,7 +17,7 @@ private:
 public:
 	PoolAllocator(size_t size) : _size(size)
 	{
-		if (_pool = static_cast<T*>(std::malloc(_size * elementSize)))
+		if (_pool = static_cast<IndexType*>(std::malloc(_size * elementSize)))
 		{
 			_headNode = reinterpret_cast<Node*>(_pool);
 
@@ -45,7 +45,7 @@ public:
 
 		if (sizeof(T) > elementSize)
 		{
-			throw std::bad_alloc();
+			return nullptr;
 		}
 		if (!_headNode)
 		{

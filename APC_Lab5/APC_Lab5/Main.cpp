@@ -8,8 +8,8 @@
 #define DefaultTests
 
 #define Benchmark
-#define TestPoolAllocator
-#define TestNewDelete
+//#define TestPoolAllocator
+//#define TestNewDelete
 
 #define TestCapacity
 
@@ -37,7 +37,7 @@ int main(int argc, const char* argv[])
     // Capacity too large for the given index type,
     // since max value is reserved as a null value
 //    Pool pool_ { (IndexType)-1 };
-
+    
 
     const int capacity = 4;
     std::cout << "Creating pool with capacity " << capacity << "..." << std::endl;
@@ -135,8 +135,49 @@ int main(int argc, const char* argv[])
 
 #ifdef TestCapacity
     {
+        struct Iam16byte { int64_t x, y; };
 
-    }
+        const int capacity = 4;
+        std::cout << "Creating pool with capacity " << capacity << "..." << std::endl;
+
+        Pool pool{ capacity };
+
+        Iam16byte b(50, 60);
+        std::cout << "Size of b: " << sizeof(b) << std::endl; //16 byte object
+        auto p = pool.create<Iam16byte>((int64_t)1, (int64_t)2);
+
+        assert(!p); //assert nullptr was returned
+
+        auto p1 = pool.create<IAm2byte>((int16_t)1);
+        auto p2 = pool.create<IAm4byte>((int32_t)2);
+
+        assert(pool.count_free() == capacity - 2);
+
+        auto p3 = pool.create<IAm8byte>((int64_t)3);
+        auto p4 = pool.create<IAmPolymorphic>();
+
+        assert(pool.count_free() == capacity - 4);
+
+        try {
+            auto p5 = pool.create<IAm8byte>((int64_t)3);
+        }
+        catch (std::bad_alloc e)
+        {
+            std::cout << "Memory pool is full" << std::endl;
+        }
+
+        pool.destroy(p1);
+        pool.destroy(p2);
+        pool.destroy(p3);
+        pool.destroy(p4);
+        pool.destroy(p); //destroying object that does not belong to pool
+
+
+        assert(pool.count_free() == capacity);
+    }   
+
+    
+
 #endif // TestCapacity
 
 
