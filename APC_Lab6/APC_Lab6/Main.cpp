@@ -1,11 +1,11 @@
 //DEL == 1 för första labben, == 2 för andra labben
 #include "TestLevel.h"
 
-#if DEL == 1 
+#if DEL == 2 
 #ifdef _DEBUG
 #ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#define new DBG_NEW
+//#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+//#define new DBG_NEW
 #endif
 #endif  // _DEBUG
 #include <crtdbg.h>

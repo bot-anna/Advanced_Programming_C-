@@ -49,7 +49,7 @@ namespace {
         explicit operator char() const { return value; }
         friend
             std::ostream& operator<<(std::ostream& cout, Dhelper d) {
-                return cout << (char)d;
+            return cout << (char)d;
         }
 
     };
@@ -116,7 +116,7 @@ namespace {
             IsNotConstr(checkDhelper);
             flag = 2;
         }
-//#pragma warning(disable:26495)
+ //       #pragma warning(disable:26495)
         Dhelper(bool) {
             assert(false);
         }

@@ -5,14 +5,18 @@
 #include <iterator>
 #include <ostream>
 #include "Dalloc.hpp"
+#include <new>
+#include <cstring>
 
 template <typename T> class Vector
 {
+	
 private: 
+
 	size_t _size;
 	size_t _cap;
 	T* _ptr;
-	Dalloc<T> _dAlloc;
+	Dalloc<T> _dAlloc = Dalloc<T>();
 
 	template<typename CT, int DIR>
 	class VectorIterDir
@@ -131,16 +135,19 @@ public:
 	using difference_type = std::ptrdiff_t;
 	using reference = T&;
 	using const_reference = const T&;
+	using pointer = T*;
+	using const_pointer = const T*;
 	using iterator = VectorIterDir<T, +1>;
 	using const_iterator = VectorIterDir<const T, +1>;
 	using reverse_iterator = VectorIterDir < T, -1>;
 	using const_reverse_iterator = VectorIterDir<const T, -1>;
 
+
 	~Vector() noexcept
 	{
-		for (int i = 0; i < _size; i++)
+		for (size_t i = 0; i < _size; i++)
 		{
-			_ptr[i]->~T();
+			_ptr[i].~T();
 		}
 		_dAlloc.deallocate(_ptr, _cap);
 	}
@@ -152,36 +159,33 @@ public:
 		CHECK
 	}
 
-
-	template<class Titer>
-	Vector(size_t newCapacity, Titer begin, Titer end)
-	{
-
-	}
-
 	Vector(const char* other)
 	{
 		_size = strlen(other);
 		_cap = _size;
 
 		size_t i;
+		
 
 		if (_size != 0)
 		{
+			_ptr = _dAlloc.allocate(_cap);
 			try {
-				_ptr = _dAlloc.allocate(_cap);
+				
 				for (i = 0; i < _size; i++)
 				{
-					new (_ptr + i) T(other[i]);
+					new(_ptr + i) T(other[i]);
 				}
 			}
-			catch (std::exception)
+			catch (std::exception&)
 			{
-				while (i >= 0)
+				while (i > 0)
 				{
-					_ptr[i]->~T();
 					i--;
+					_ptr[i].~T();
+					
 				}
+				_dAlloc.deallocate(_ptr, _cap);
 				throw;
 			}
 		}
@@ -192,10 +196,12 @@ public:
 		CHECK
 	}
 
-	Vector(const Vector& other)
+	
+	Vector(const Vector<T>& other)
 	{
 		_size = other._size;
 		_cap = other._cap;
+		size_t i;
 		if (_size == 0)
 		{
 			_ptr = nullptr;
@@ -206,16 +212,18 @@ public:
 				_ptr = _dAlloc.allocate(_cap);
 				for (i = 0; i < _size; i++)
 				{
-					new (_ptr + i) T(other[i]);
+					new (_ptr + i) T(other._ptr[i]);
 				}
 			}
 			catch (std::exception)
 			{
-				while (i >= 0)
+				while (i > 0)
 				{
-					_ptr[i]->~T();
 					i--;
+					_ptr[i].~T();
+
 				}
+				_dAlloc.deallocate(_ptr, _cap);
 				throw;
 			}
 		}
@@ -236,24 +244,24 @@ public:
 
 	Vector& operator=(const Vector& other)
 	{
-		_size = other._size;
-		_cap = other._cap;
-		T* temp = new T[other._cap];
-
-		for (size_t i = 0; i < _size; i++)
+		if (other == *this)
 		{
-			temp[i] = other._ptr[i];
+			return *this;
 		}
-
-		delete[] _ptr;
-		_ptr = temp;
+		Vector<T> temp(other);
+		swap(temp, *this);
 		CHECK
 		return *this;
 	}
 
 	Vector& operator=(Vector&& other) noexcept
 	{
-		delete[] _ptr;
+		for (size_t i = 0; i < _size; i++)
+		{
+			_ptr[i].~T();
+		}
+		_dAlloc.deallocate(_ptr, _cap);
+
 		_size = other._size;
 		_cap = other._cap;
 		_ptr = other._ptr;
@@ -316,19 +324,29 @@ public:
 	}
 	void reserve(size_t n)
 	{
-		if (n < _size || n <= _cap)
+		if (n <= _cap)
 		{
 			return;
 		}
 
-		T* temp = new T[n];
-		for (size_t i = 0; i < _size; i++)
+		if (_ptr)
 		{
-			temp[i] = _ptr[i];
-		}
+			T* temp = _dAlloc.allocate(n);
 
-		delete[] _ptr;
-		_ptr = temp;
+			size_t i;
+			for (i = 0; i < _size; i++)
+			{
+				new(temp + i) T(std::move(_ptr[i]));
+			}
+
+			this->~Vector();
+			_ptr = temp;
+		}
+		else
+		{
+			_ptr = _dAlloc.allocate(n);
+			_size = 0;
+		}
 		_cap = n;
 		CHECK
 	}
@@ -336,13 +354,16 @@ public:
 	{
 		if (_size < _cap)
 		{
-			T* temp = new T[_size];
-			for (size_t i = 0; i < _size; i++)
+			T* temp = _dAlloc.allocate(_size);
+			size_t i;
+
+			for (i = 0; i < _size; i++)
 			{
-				temp[i] = _ptr[i];
+				new(temp + i) T(std::move(_ptr[i]));
+				_ptr[i].~T();
 			}
 
-			delete[] _ptr;
+			_dAlloc.deallocate(_ptr, _cap);
 			_ptr = temp;
 			_cap = _size;
 		}
@@ -360,7 +381,15 @@ public:
 		{
 			for (size_t i = _size; i < n; i++)
 			{
-				_ptr[i] = T();
+				new(_ptr + i) T();
+			}
+		}
+		else
+		{
+			size_t i = n;
+			for (i; i < _size; i++)
+			{
+				_ptr[i].~T();
 			}
 		}
 
@@ -375,7 +404,7 @@ public:
 			return;
 		}
 
-		_ptr[--_size] = T();
+		_ptr[--_size].~T();
 		CHECK
 	}
 
@@ -390,18 +419,16 @@ public:
 			reserve(_size * 2);
 		}
 
-		_ptr[_size] = c;
-		_size++;
+		try {
+			new(_ptr + _size) T(std::move(c));
+			_size++;
+		}
+		catch (std::exception&)
+		{
+			throw;
+		}
 		CHECK
 	}
-
-	void push_back(T&& c)
-	{
-
-	}
-
-	template<class... Args>
-	reference emplace_back(Args&&... args);
 
 	friend bool operator==(const Vector& lhs, const Vector& rhs)
 	{
@@ -531,7 +558,7 @@ public:
 			return false;
 		}
 		return true;
-	}
+	} 
 
 };
 

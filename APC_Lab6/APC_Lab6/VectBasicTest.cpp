@@ -54,7 +54,7 @@ void TestBasic() {
 		assert(bar <= bar && fox >= fox);
 		Vector<char> foxa("foxa");
 		assert(fox != foxa && foxa != fox);
-		assert(fox<foxa&& foxa>fox);
+		assert(fox<foxa && foxa>fox);
 	}
 #endif
 #if LEVEL>=4

@@ -1,8 +1,8 @@
 #pragma once
 
 #define LEVEL 99
-#define DEL 1
-//#define G_BETYG
+#define DEL 2
+#define G_BETYG
 //#define VG_BETYG
 //#define DEL 2
 

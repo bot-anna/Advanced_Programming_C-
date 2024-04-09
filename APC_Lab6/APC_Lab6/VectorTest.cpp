@@ -75,7 +75,7 @@ void TestPushBack() {
 
 template<class T>
 void TestAss(Vector<T>& (*Ass) (Vector<T>&, const Vector<T>&), bool Efficient) {
-     {
+    {
         Vector<Dhelper> Bar("Bar");
         Vector<Dhelper> Fox("Fo");
         Vector<Dhelper> Foo("Fooo");
