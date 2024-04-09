@@ -8,8 +8,8 @@
 #define DefaultTests
 
 #define Benchmark
-//#define TestPoolAllocator
-//#define TestNewDelete
+#define TestPoolAllocator
+#define TestNewDelete
 
 #define TestCapacity
 
@@ -20,9 +20,18 @@ int main(int argc, const char* argv[])
 
 #ifdef DefaultTests
     // A few test types to create in the pool
-    struct IAm2byte { int16_t x; };
-    struct IAm4byte { int32_t x; };
-    struct IAm8byte { int64_t x; };
+    struct IAm2byte { 
+        int16_t x; 
+        IAm2byte(int16_t x) : x(x) {}
+    };
+    struct IAm4byte { 
+        int32_t x; 
+        IAm4byte(int32_t x) : x(x) {}
+    };
+    struct IAm8byte { 
+        int64_t x; 
+        IAm8byte(int64_t x) : x(x) {}
+    };
     struct IAmPolymorphic
     {
         virtual ~IAmPolymorphic() noexcept
@@ -82,7 +91,11 @@ int main(int argc, const char* argv[])
 
     const IndexType N = (IndexType)-1 - 1;
     int Nmult = 1000;
-    struct A { int a, b, c; };
+    struct A { 
+        int a, b, c;
+        A(int a, int b, int c) : a(a), b(b), c(c) {}
+
+    };
     A* ptrs[N];
 
 #ifdef TestPoolAllocator
@@ -135,7 +148,10 @@ int main(int argc, const char* argv[])
 
 #ifdef TestCapacity
     {
-        struct Iam16byte { int64_t x, y; };
+        struct Iam16byte { 
+            int64_t x, y;
+            Iam16byte(int64_t x, int64_t y) : x(x), y(y) {}
+        };
 
         const int capacity = 4;
         std::cout << "Creating pool with capacity " << capacity << "..." << std::endl;

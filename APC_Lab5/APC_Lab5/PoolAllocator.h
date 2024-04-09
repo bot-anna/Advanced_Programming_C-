@@ -92,6 +92,11 @@ public:
 	{
 		return "";
 	}
+
+	~PoolAllocator()
+	{
+		delete[] _pool;
+	}
 };
 
 #endif
